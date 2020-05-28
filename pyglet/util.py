@@ -36,7 +36,9 @@
 """Various utility functions used internally by pyglet
 """
 
+import os
 import sys
+import importlib
 
 import pyglet
 
@@ -131,3 +133,58 @@ def debug_print(enabled_or_option='debug'):
             return True
 
     return _debug_print
+
+
+class Codecs:
+
+    def __init__(self):
+        self._decoders = []
+        self._encoders = []
+        self._decoder_extensions = {}   # Map str -> list of matching ImageDecoders
+        self._encoder_extensions = {}   # Map str -> list of matching ImageEncoders
+
+    def get_encoders(self, filename=None):
+        """Get an ordered list of all encoders. If a `filename` is provided,
+        encoders supporting that extension will be ordered first in the list.
+        """
+        encoders = []
+        if filename:
+            extension = os.path.splitext(filename)[1].lower()
+            encoders += self._encoder_extensions.get(extension, [])
+        encoders += [e for e in self._encoders if e not in encoders]
+        return encoders
+
+    def get_decoders(self, filename=None):
+        """Get an ordered list of all decoders. If a `filename` is provided,
+        decoders supporting that extension will be ordered first in the list.
+        """
+        decoders = []
+        if filename:
+            extension = os.path.splitext(filename)[1].lower()
+            decoders += self._decoder_extensions.get(extension, [])
+        decoders += [e for e in self._decoders if e not in decoders]
+        return decoders
+
+    def add_decoders(self, module):
+        """Add a decoder module.  The module must define `get_decoders`.  Once
+        added, the appropriate decoders defined in the codec will be returned by
+        Codecs.get_decoders.
+        """
+        for decoder in module.get_decoders():
+            self._decoders.append(decoder)
+            for extension in decoder.get_file_extensions():
+                if extension not in self._decoder_extensions:
+                    self._decoder_extensions[extension] = []
+                self._decoder_extensions[extension].append(decoder)
+
+    def add_encoders(self, module):
+        """Add an encoder module.  The module must define `get_encoders`.  Once
+        added, the appropriate encoders defined in the codec will be returned by
+        Codecs.get_encoders.
+        """
+        for encoder in module.get_encoders():
+            self._encoders.append(encoder)
+            for extension in encoder.get_file_extensions():
+                if extension not in self._encoder_extensions:
+                    self._encoder_extensions[extension] = []
+                self._encoder_extensions[extension].append(encoder)

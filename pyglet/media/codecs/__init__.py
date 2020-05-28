@@ -32,18 +32,21 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 # ----------------------------------------------------------------------------
+
+from pyglet.util import Codecs
 from .base import *
 
-import os.path
 import pyglet
 
 
 _debug = pyglet.options['debug_media']
 
-_decoders = []              # List of registered MediaDecoders
-_encoders = []              # List of registered MediaEncoders
-_decoder_extensions = {}    # Map str -> list of matching MediaDecoders
-_encoder_extensions = {}    # Map str -> list of matching MediaEncoders
+_codecs = Codecs()
+
+add_decoders = _codecs.add_decoders
+get_decoders = _codecs.get_decoders
+add_encoders = _codecs.add_encoders
+get_encoders = _codecs.get_encoders
 
 
 class MediaDecoder:
@@ -94,60 +97,6 @@ class MediaEncoder:
 
     def __repr__(self):
         return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
-
-
-def get_decoders(filename=None):
-    """Get an ordered list of all decoders. If a `filename` is provided,
-    decoders supporting that extension will be ordered first in the list.
-    """
-    decoders = []
-    if filename:
-        extension = os.path.splitext(filename)[1].lower()
-        decoders += _decoder_extensions.get(extension, [])
-    decoders += [e for e in _decoders if e not in decoders]
-    return decoders
-
-
-def get_encoders(filename=None):
-    """Get an ordered list of all encoders. If a `filename` is provided,
-    encoders supporting that extension will be ordered first in the list.
-    """
-    encoders = []
-    if filename:
-        extension = os.path.splitext(filename)[1].lower()
-        encoders += _encoder_extensions.get(extension, [])
-    encoders += [e for e in _encoders if e not in encoders]
-    return encoders
-
-
-def add_decoders(module):
-    """Add a decoder module.  The module must define `get_decoders`.  Once
-    added, the appropriate decoders defined in the codec will be returned by
-    pyglet.media.codecs.get_decoders.
-    """
-    for decoder in module.get_decoders():
-        if decoder in _decoders:
-            continue
-        _decoders.append(decoder)
-        for extension in decoder.get_file_extensions():
-            if extension not in _decoder_extensions:
-                _decoder_extensions[extension] = []
-            _decoder_extensions[extension].append(decoder)
-
-
-def add_encoders(module):
-    """Add an encoder module.  The module must define `get_encoders`.  Once
-    added, the appropriate encoders defined in the codec will be returned by
-    pyglet.media.codecs.get_encoders.
-    """
-    for encoder in module.get_encoders():
-        if encoder in _encoders:
-            continue
-        _encoders.append(encoder)
-        for extension in encoder.get_file_extensions():
-            if extension not in _encoder_extensions:
-                _encoder_extensions[extension] = []
-            _encoder_extensions[extension].append(encoder)
 
 
 def add_default_media_codecs():
