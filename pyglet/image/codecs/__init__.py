@@ -52,7 +52,7 @@ Modules must also implement the two functions::
 
 import os.path
 
-from pyglet.util import Codecs
+from pyglet.util import Codecs, Decoder, Encoder, DecodeException, EncodeException
 from pyglet import compat_platform
 
 
@@ -66,12 +66,8 @@ class _ImageCodecs(Codecs):
     def add_decoders(self, module):
         """Override the default method to also add animation decoders.
         """
+        super().add_decoders(module)
         for decoder in module.get_decoders():
-            self._decoders.append(decoder)
-            for extension in decoder.get_file_extensions():
-                if extension not in self._decoder_extensions:
-                    self._decoder_extensions[extension] = []
-                self._decoder_extensions[extension].append(decoder)
             for extension in decoder.get_animation_file_extensions():
                 if extension not in self._decoder_animation_extensions:
                     self._decoder_animation_extensions[extension] = []
@@ -99,20 +95,15 @@ get_encoders = _codecs.get_encoders
 get_animation_decoders = _codecs.get_animation_decoders
 
 
-class ImageDecodeException(Exception):
-    exception_priority = 10
-
-
-class ImageEncodeException(Exception):
+class ImageDecodeException(DecodeException):
     pass
 
 
-class ImageDecoder:
-    def get_file_extensions(self):
-        """Return a list of accepted file extensions, e.g. ['.png', '.bmp']
-        Lower-case only.
-        """
-        return []
+class ImageEncodeException(EncodeException):
+    pass
+
+
+class ImageDecoder(Decoder):
 
     def get_animation_file_extensions(self):
         """Return a list of accepted file extensions, e.g. ['.gif', '.flc']
@@ -140,12 +131,7 @@ class ImageDecoder:
                                self.get_file_extensions())
 
 
-class ImageEncoder:
-    def get_file_extensions(self):
-        """Return a list of accepted file extensions, e.g. ['.png', '.bmp']
-        Lower-case only.
-        """
-        return []
+class ImageEncoder(Encoder):
 
     def encode(self, image, file, filename):
         """Encode the given image to the given file.  filename

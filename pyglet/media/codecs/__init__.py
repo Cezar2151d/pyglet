@@ -33,7 +33,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # ----------------------------------------------------------------------------
 
-from pyglet.util import Codecs
+from pyglet.util import Codecs, Decoder, Encoder
 from .base import *
 
 import pyglet
@@ -49,12 +49,7 @@ add_encoders = _codecs.add_encoders
 get_encoders = _codecs.get_encoders
 
 
-class MediaDecoder:
-    def get_file_extensions(self):
-        """Return a list or tuple of accepted file extensions, e.g. ['.wav', '.ogg']
-        Lower-case only.
-        """
-        return []
+class MediaDecoder(Decoder):
 
     def decode(self, file, filename, streaming):
         """Read the given file object and return an instance of `Source`
@@ -64,22 +59,8 @@ class MediaDecoder:
         """
         raise NotImplementedError()
 
-    def __hash__(self):
-        return hash(self.__class__.__name__)
 
-    def __eq__(self, other):
-        return self.__class__.__name__ == other.__class__.__name__
-
-    def __repr__(self):
-        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
-
-
-class MediaEncoder:
-    def get_file_extensions(self):
-        """Return a list or tuple of accepted file extensions, e.g. ['.wav', '.ogg']
-        Lower-case only.
-        """
-        return []
+class MediaEncoder(Encoder):
 
     def encode(self, media, file, filename):
         """Encode the given source to the given file.  `filename`
@@ -88,15 +69,6 @@ class MediaEncoder:
         issue warnings.
         """
         raise NotImplementedError()
-
-    def __hash__(self):
-        return hash(self.__class__.__name__)
-
-    def __eq__(self, other):
-        return self.__class__.__name__ == other.__class__.__name__
-
-    def __repr__(self):
-        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
 
 
 def add_default_media_codecs():

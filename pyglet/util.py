@@ -188,3 +188,60 @@ class Codecs:
                 if extension not in self._encoder_extensions:
                     self._encoder_extensions[extension] = []
                 self._encoder_extensions[extension].append(encoder)
+
+
+class Decoder:
+    def get_file_extensions(self):
+        """Return a list or tuple of accepted file extensions, e.g. ['.wav', '.ogg']
+        Lower-case only.
+        """
+        return []
+
+    def decode(self, *args, **kwargs):
+        """Read and decode the given file object and return an approprite
+        pyglet object. Throws DecodeException if there is an error.
+        `filename` can be a file type hint.
+        """
+        raise NotImplementedError()
+
+    def __hash__(self):
+        return hash(self.__class__.__name__)
+
+    def __eq__(self, other):
+        return self.__class__.__name__ == other.__class__.__name__
+
+    def __repr__(self):
+        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
+
+
+class Encoder:
+    def get_file_extensions(self):
+        """Return a list or tuple of accepted file extensions, e.g. ['.wav', '.ogg']
+        Lower-case only.
+        """
+        return []
+
+    def encode(self, media, file, filename):
+        """Encode the given media type to the given file.  `filename`
+        provides a hint to the file format desired.  options are
+        encoder-specific, and unknown options should be ignored or
+        issue warnings.
+        """
+        raise NotImplementedError()
+
+    def __hash__(self):
+        return hash(self.__class__.__name__)
+
+    def __eq__(self, other):
+        return self.__class__.__name__ == other.__class__.__name__
+
+    def __repr__(self):
+        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
+
+
+class DecodeException(Exception):
+    exception_priority = 10
+
+
+class EncodeException(Exception):
+    pass

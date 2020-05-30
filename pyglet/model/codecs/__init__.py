@@ -33,7 +33,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # ----------------------------------------------------------------------------
 
-from pyglet.util import Codecs
+from pyglet.util import Codecs, Decoder, Encoder, DecodeException, EncodeException
 
 
 _codecs = Codecs()
@@ -44,21 +44,15 @@ add_encoders = _codecs.add_encoders
 get_encoders = _codecs.get_encoders
 
 
-class ModelDecodeException(Exception):
-    exception_priority = 10
-
-
-class ModelEncodeException(Exception):
+class ModelDecodeException(DecodeException):
     pass
 
 
-class ModelDecoder:
-    def get_file_extensions(self):
-        """Return a list of accepted file extensions, e.g. ['.obj', '.gox']
-        Lower-case only.
-        """
-        return []
+class ModelEncodeException(EncodeException):
+    pass
 
+
+class ModelDecoder(Decoder):
     def decode(self, file, filename, batch):
         """Decode the given file object and return an instance of `Model`.
         Throws ModelDecodeException if there is an error.  filename
@@ -66,16 +60,8 @@ class ModelDecoder:
         """
         raise NotImplementedError()
 
-    def __repr__(self):
-        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
 
-
-class ModelEncoder:
-    def get_file_extensions(self):
-        """Return a list of accepted file extensions, e.g. ['.obj', '.gox']
-        Lower-case only.
-        """
-        return []
+class ModelEncoder(Encoder):
 
     def encode(self, model, file, filename):
         """Encode the given model to the given file.  filename
@@ -84,9 +70,6 @@ class ModelEncoder:
         issue warnings.
         """
         raise NotImplementedError()
-
-    def __repr__(self):
-        return "{0}{1}".format(self.__class__.__name__, self.get_file_extensions())
 
 
 def add_default_model_codecs():
